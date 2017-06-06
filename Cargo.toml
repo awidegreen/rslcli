@@ -1,0 +1,15 @@
+[package]
+name = "rslcli"
+version = "0.1.0"
+authors = ["Armin Widegreen <armin.widegreen@gmail.com>"]
+
+[dependencies]
+hyper = "0.10.*"
+log= "*"
+env_logger = "*"
+serde = "1.*"
+serde_json = "1.*"
+serde_derive = "1.*"
+chrono = { version = "*", features = ["serde"] }
+clap = "*"
+colored = "*"
