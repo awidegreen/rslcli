@@ -20,7 +20,7 @@ mod error;
 mod cli;
 
 fn main() {
-    env_logger::init().unwrap();
+    env_logger::init();
 
     let matches = cli::build_cli().get_matches();
 
