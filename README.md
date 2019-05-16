@@ -1,4 +1,4 @@
-# rslcli - Rust SL (Stockholm Public Transport) cli interface (unoffical)
+# rslcli - Stockholms Lokaltrafik (Stockholm Public Transport) cli interface (unoffical)
 
 The missing interface for your daily commute in Stockholm.
 
@@ -23,13 +23,9 @@ $ rslcli -n 3 Stadshagen Centralen
 
 For more information use `rslcli -h`.
 
-## TODO
-
-* update hyper to latest version
-
 ## License
 
-Copyright (C) 2017 by Armin Widegreen
+Copyright (C) 2019 by Armin Widegreen
 
 This is free software, licensed under The [ISC License](LICENSE).
 

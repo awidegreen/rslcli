@@ -1,4 +1,4 @@
-extern crate hyper;
+extern crate reqwest;
 
 #[macro_use]
 extern crate log;
@@ -12,12 +12,12 @@ extern crate chrono;
 extern crate clap;
 extern crate colored;
 
-use colored::*;
 use chrono::prelude::*;
+use colored::*;
 
-mod sl;
-mod error;
 mod cli;
+mod error;
+mod sl;
 
 fn main() {
     env_logger::init();
@@ -25,7 +25,7 @@ fn main() {
     let matches = cli::build_cli().get_matches();
 
     let from_str = matches.value_of("from").unwrap();
-    let to_str   = matches.value_of("to").unwrap();
+    let to_str = matches.value_of("to").unwrap();
     let num_results = value_t!(matches, "number", usize).unwrap_or(1);
     debug!("Use number of result: {}", num_results);
 
@@ -33,16 +33,13 @@ fn main() {
 
     let find_from = match sl.find(&from_str) {
         Ok(r) => r,
-        Err(e) => panic!("Unable to retrieve result for from '{}': {:?}",
-                         from_str, e)
+        Err(e) => panic!("Unable to retrieve result for from '{}': {:?}", from_str, e),
     };
     let from = &find_from.candidates()[0];
 
     let find_to = match sl.find(&to_str) {
         Ok(r) => r,
-        Err(e) => panic!("Unable to retrieve result for to '{}': {:?}",
-                         to_str, e)
-
+        Err(e) => panic!("Unable to retrieve result for to '{}': {:?}", to_str, e),
     };
     let to = &find_to.candidates()[0];
 
@@ -64,8 +61,10 @@ fn main() {
     let find_travel = match sl.travel(from, to, &topt) {
         Ok(r) => r,
         Err(e) => {
-            error!("Unable to find trips from '{}' to '{}': {:?}",
-                         from_str, to_str, e);
+            error!(
+                "Unable to find trips from '{}' to '{}': {:?}",
+                from_str, to_str, e
+            );
             std::process::exit(11);
         }
     };
@@ -84,7 +83,7 @@ fn get_date_time(dt: &str) -> Option<NaiveDateTime> {
 
     let input = format!("{}-{}", Utc::today().year(), dt);
     if let Ok(r) = NaiveDateTime::parse_from_str(&input, "%Y-%m-%d %H:%M") {
-        return Some(r)
+        return Some(r);
     }
 
     if let Ok(t) = NaiveTime::parse_from_str(dt, "%H:%M") {
@@ -97,16 +96,17 @@ fn get_date_time(dt: &str) -> Option<NaiveDateTime> {
 
 //------------------------------------------------------------------------------
 
-fn print_trip(trip: &sl::Trip)
-{
-    println!("\n* {}",
-             trip.Origin.green());
+fn print_trip(trip: &sl::Trip) {
+    println!("\n* {}", trip.Origin.green());
     println!("|  Duration: {}", trip.Duration.on_red());
-    println!("|  {} - {} ({})",
-             trip.DepartureTime.format("%H:%M").to_string().yellow(),
-             trip.ArrivalTime.format("%H:%M").to_string().yellow(),
-             trip.DepartureDate.format("%Y-%m-%d").to_string().yellow());
-    let lines: Vec<String> = trip.Transports
+    println!(
+        "|  {} - {} ({})",
+        trip.DepartureTime.format("%H:%M").to_string().yellow(),
+        trip.ArrivalTime.format("%H:%M").to_string().yellow(),
+        trip.DepartureDate.format("%Y-%m-%d").to_string().yellow()
+    );
+    let lines: Vec<String> = trip
+        .Transports
         .iter()
         .map(|ref t| {
             if t.LineNumber.is_empty() {
@@ -120,36 +120,42 @@ fn print_trip(trip: &sl::Trip)
     println!("|  Summary: {}", lines.join(" - "));
     println!("|");
     for sub in &trip.SubTrips {
-        println!("|  {}   {} {}",
-                 "*".blue(),
-                 sub.DepartureTime.format("%H:%M").to_string().yellow(),
-                 sub.Origin);
+        println!(
+            "|  {}   {} {}",
+            "*".blue(),
+            sub.DepartureTime.format("%H:%M").to_string().yellow(),
+            sub.Origin
+        );
         //println!(" {}", "|".blue());
-        println!("|  {}       {}",
-                 "|".blue(),
-                 sub.TransportText);
-        println!("|  {}       Line:     {} {}",
-                 "|".blue(),
-                 sub.transport_string(), sub.LineNumber);
-        println!("|  {}       Duration: {}",
-                 "|".blue(),
-                 format!("{} min",sub.duration().num_minutes()).on_red());
+        println!("|  {}       {}", "|".blue(), sub.TransportText);
+        println!(
+            "|  {}       Line:     {} {}",
+            "|".blue(),
+            sub.transport_string(),
+            sub.LineNumber
+        );
+        println!(
+            "|  {}       Duration: {}",
+            "|".blue(),
+            format!("{} min", sub.duration().num_minutes()).on_red()
+        );
         //println!(" {}", "|".blue());
-        println!("|  {}   {} {}",
-                 "*".blue(),
-                 sub.ArrivalTime.format("%H:%M").to_string().yellow(),
-                 sub.Destination);
+        println!(
+            "|  {}   {} {}",
+            "*".blue(),
+            sub.ArrivalTime.format("%H:%M").to_string().yellow(),
+            sub.Destination
+        );
     }
 
     println!("|\n* {}\n\n{}", trip.Destination.green(), "-".repeat(80));
-
 }
 
 //------------------------------------------------------------------------------
 
 #[cfg(test)]
 mod test {
-    use chrono::{NaiveTime, NaiveDateTime, UTC, Datelike};
+    use chrono::{Datelike, NaiveDateTime, NaiveTime, UTC};
 
     #[test]
     fn test_get_date_time_time_only() {
